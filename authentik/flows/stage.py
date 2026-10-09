@@ -201,12 +201,16 @@ class ChallengeStageView(StageView):
                     messages = get_messages(self.request)
                 # Flow payloads can outlive the previous signed media JWT, so
                 # refreshes must mint fresh URLs instead of reusing cached ones.
+                # Brand, not request: a request would also make these URLs absolute.
+                brand = getattr(self.request, "brand", None)
                 flow_info = ContextualFlowInfo(
                     data={
                         "title": self.format_title(),
-                        "background": self.executor.flow.background_url(use_cache=False),
+                        "background": self.executor.flow.background_url(
+                            use_cache=False, brand=brand
+                        ),
                         "background_themed_urls": self.executor.flow.background_themed_urls(
-                            use_cache=False,
+                            use_cache=False, brand=brand
                         ),
                         "cancel_url": self.cancel_url,
                         "layout": self.executor.flow.layout,

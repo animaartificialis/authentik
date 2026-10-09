@@ -7,7 +7,7 @@ from django.test import RequestFactory, TestCase
 from django.urls import reverse
 
 from authentik.core.tests.utils import RequestFactory as AuthentikRequestFactory
-from authentik.core.tests.utils import create_test_flow
+from authentik.core.tests.utils import create_test_brand, create_test_flow
 from authentik.flows.models import Flow, FlowStageBinding
 from authentik.flows.stage import StageView
 from authentik.flows.views.executor import FlowExecutorView
@@ -43,6 +43,32 @@ class TestViews(TestCase):
             challenge.initial_data["flow_info"]["background"],
             "/static/dist/assets/images/flow_background.jpg",
         )
+
+    def test_challenge_stage_flow_info_uses_brand_default_background(self):
+        """Test a flow without its own background falls back to the brand's default."""
+        brand = create_test_brand()
+        brand.branding_default_flow_background = "/static/dist/assets/images/custom.jpg"
+        brand.save()
+
+        flow = create_test_flow()
+        flow.background = ""
+        flow.save()
+        stage = DummyStage.objects.create(name="dummy-brand-background")
+        FlowStageBinding.objects.create(target=flow, stage=stage, order=0)
+
+        request = self.authentik_factory.get("/")
+        request.brand = brand
+
+        executor = FlowExecutorView(flow=flow, request=request)
+        executor.current_stage = stage
+
+        view = DummyStageView(executor)
+        view.request = request
+
+        background = view._get_challenge().initial_data["flow_info"]["background"]
+
+        # The brand's background, and still app-relative.
+        self.assertEqual(background, "/static/dist/assets/images/custom.jpg")
 
     def test_flow_interface_css_background_preserves_presigned_url_query(self):
         """Test flow CSS keeps signed URL query separators intact."""

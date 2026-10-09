@@ -25,6 +25,7 @@ from authentik.lib.utils.reflection import class_to_path
 from authentik.policies.models import PolicyBindingModel
 
 if TYPE_CHECKING:
+    from authentik.brands.models import Brand
     from authentik.flows.planner import FlowPlan
     from authentik.flows.stage import StageView
 
@@ -190,11 +191,13 @@ class Flow(SerializerModel, PolicyBindingModel):
         self,
         request: HttpRequest | None = None,
         use_cache: bool = True,
+        brand: Brand | None = None,
     ) -> str:
         """Get the URL to the background image"""
         if not self.background:
-            if request:
-                return request.brand.branding_default_flow_background_url(
+            brand = brand or getattr(request, "brand", None)
+            if brand:
+                return brand.branding_default_flow_background_url(
                     request,
                     use_cache=use_cache,
                 )
@@ -212,11 +215,13 @@ class Flow(SerializerModel, PolicyBindingModel):
         self,
         request: HttpRequest | None = None,
         use_cache: bool = True,
+        brand: Brand | None = None,
     ) -> dict[str, str] | None:
         """Get themed URLs for background if it contains %(theme)s"""
         if not self.background:
-            if request:
-                return request.brand.branding_default_flow_background_themed_urls(
+            brand = brand or getattr(request, "brand", None)
+            if brand:
+                return brand.branding_default_flow_background_themed_urls(
                     request,
                     use_cache=use_cache,
                 )
