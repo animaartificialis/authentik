@@ -253,7 +253,8 @@ export class FlowExecutor extends WithBrandConfig(Interface) implements StageHos
             this.layout = this.challenge?.flowInfo?.layout || FlowExecutor.DefaultLayout;
         }
 
-        if (changedProperties.has("flowInfo") || changedProperties.has("activeTheme")) {
+        // `flowInfo` is a getter over `challenge`, so it never lands in `changedProperties`.
+        if (changedProperties.has("challenge") || changedProperties.has("activeTheme")) {
             this.#synchronizeFlowInfo();
         }
     }
