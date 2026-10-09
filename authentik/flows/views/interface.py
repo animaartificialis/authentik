@@ -36,6 +36,7 @@ class FlowInterfaceView(InterfaceView):
         flow = get_object_or_404(Flow, slug=self.kwargs.get("flow_slug"))
         kwargs["flow"] = flow
         kwargs["flow_background_url"] = flow.background_url(self.request)
+        kwargs["flow_background_themed_urls"] = flow.background_themed_urls(self.request)
         kwargs["inspector"] = "inspector" in self.request.GET
         return super().get_context_data(**kwargs)
 

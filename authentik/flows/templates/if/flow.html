@@ -7,7 +7,11 @@
 
 {% block head_before %}
 {{ block.super }}
+{% if flow_background_themed_urls %}
+<link rel="prefetch" href="{% if ui_theme == "dark" %}{{ flow_background_themed_urls.dark }}{% else %}{{ flow_background_themed_urls.light }}{% endif %}" />
+{% else %}
 <link rel="prefetch" href="{{ flow_background_url }}" />
+{% endif %}
 {% if flow.compatibility_mode and not inspector %}
 {% comment %}
     @see {@link web/types/webcomponents.d.ts} for type definitions.
@@ -32,9 +36,31 @@
 {% block head %}
 <script src="{% versioned_script 'dist/flow/FlowInterface-%v.js' %}" type="module"></script>
 <style data-id="flow-css">
+{% if not flow_background_themed_urls %}
   :root {
       --ak-global--background-image: url("{{ flow_background_url|iriencode|safe }}");
   }
+{% elif ui_theme == "dark" %}
+  :root {
+      --ak-global--background-image: url("{{ flow_background_themed_urls.dark|iriencode|safe }}");
+  }
+{% elif ui_theme == "light" %}
+  :root {
+      --ak-global--background-image: url("{{ flow_background_themed_urls.light|iriencode|safe }}");
+  }
+{% else %}
+  :root {
+      --ak-global--background-image: url("{{ flow_background_themed_urls.light|iriencode|safe }}");
+  }
+  @media (prefers-color-scheme: dark) {
+      :root {
+          --ak-global--background-image: url("{{ flow_background_themed_urls.dark|iriencode|safe }}");
+      }
+  }
+  :root[data-theme="dark"] {
+      --ak-global--background-image: url("{{ flow_background_themed_urls.dark|iriencode|safe }}");
+  }
+{% endif %}
 </style>
 {% endblock %}
 
